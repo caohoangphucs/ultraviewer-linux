@@ -145,7 +145,7 @@ class RGB555Screen:
                     raise ValueError('JPEG tile outside atlas')
                 canvas.paste(atlas.crop((sx,sy,sx+w,sy+h)),(x,y))
                 count += 1
-        if fields[1] or fields[2]:
+        if fields[1] and fields[2]:
             pixels = list(fields)
             pixels[5:] = [b''] * 6
             count += apply_rgb555_update(canvas,pixels,self.decoder)
