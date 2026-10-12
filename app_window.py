@@ -9,8 +9,9 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('WebKit2', '4.1')
 from gi.repository import Gtk, WebKit2, GLib
 
-def main():
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
+def main(port=8765):
+    if len(sys.argv) > 1 and sys.argv[1].isdigit():
+        port = int(sys.argv[1])
     url = f"http://127.0.0.1:{port}"
 
     Gtk.init()

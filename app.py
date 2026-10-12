@@ -45,10 +45,11 @@ def main(argv=None):
     server_thread.start()
     print(f"UltraViewer Controller core listening on http://127.0.0.1:{port}", flush=True)
 
-    if not args.no_gui and os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY'):
+    if not args.no_gui and (os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')):
         try:
+            time.sleep(0.1)
             import app_window
-            app_window.main()
+            app_window.main(port)
         except Exception as e:
             print(f"GUI launch failed: {e}. Falling back to console mode.", file=sys.stderr)
             try:
