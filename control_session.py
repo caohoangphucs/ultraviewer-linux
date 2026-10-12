@@ -44,10 +44,21 @@ class ControlSession:
             for _ in range(4):
                 response = self.registration.receive_mode1_payload()
                 if response.startswith(b'8:'):
+                    parts = response.decode(codec, errors='ignore').split(':')
+                    if len(parts) >= 2 and parts[1] != '1':
+                        status = parts[1]
+                        if status == '2':
+                            raise ValueError('Sai mật khẩu (Wrong Password)')
+                        elif status == '11':
+                            raise ValueError('Đối tác không online hoặc ID không tồn tại')
+                        elif status == '99':
+                            raise ValueError('Không thể kết nối tới đối tác (Status 99)')
+                        else:
+                            raise ValueError(f'Lỗi kết nối từ máy chủ (Mã: {status})')
                     self.route = decode_target_route(response,ansi_codec=codec)
                     break
             if self.route is None:
-                raise ValueError('partner route was not received')
+                raise ValueError('Không nhận được thông tin định tuyến từ đối tác')
             self.relay = SessionTransport(timeout=self.timeout,
                 original_certificate_policy=self.original_certificate_policy)
             self.relay.connect(self.route.tcp_server_ip,443,http_hostname=self.route.tcp_server_hostname)

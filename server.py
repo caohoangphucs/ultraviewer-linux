@@ -131,7 +131,7 @@ class Viewer:
                         session.button(button, False)
         except Exception as exc:
             with self.lock:
-                self.state['error'] = f'{type(exc).__name__}: {exc}'
+                self.state['error'] = str(exc) if str(exc) else type(exc).__name__
         finally:
             with self.lock:
                 self.state['state'] = 'disconnected'
