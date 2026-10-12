@@ -1,0 +1,97 @@
+<!doctype html><html lang="vi"><meta charset="utf-8"><title>UltraViewer Web Controller</title>
+<style>
+body{margin:0;background:#171b24;color:#eee;font:15px system-ui;display:flex;flex-direction:column;height:100vh}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 16px;background:#1f2430;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.brand{font-weight:700;color:#58a6ff;font-size:16px;margin-right:8px}
+.form-group{display:flex;align-items:center;gap:6px}
+input{background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;border-radius:4px;font-size:14px;outline:none}
+input:focus{border-color:#58a6ff}
+button{background:#238636;color:#fff;border:none;padding:7px 16px;border-radius:4px;cursor:pointer;font-weight:600;font-size:14px}
+button:hover{background:#2ea043}
+button#disconnect{background:#da3633}
+button#disconnect:hover{background:#f85149}
+#status{margin-left:auto;padding:4px 10px;border-radius:4px;background:#21262d;font-size:13px;color:#8b949e}
+main{flex:1;overflow:auto;display:flex;justify-content:center;align-items:center;padding:12px;background:#0d1117}
+canvas{display:block;max-width:100%;max-height:100%;outline:none;background:#000;border:2px solid #30363d;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,0.5)}
+canvas:focus{border-color:#58a6ff}
+footer{padding:8px 16px;background:#161b22;color:#8b949e;font-size:12px;text-align:center}
+</style>
+<header>
+  <span class="brand">UltraViewer Web</span>
+  <div class="form-group">
+    <label for="partnerId">Partner ID:</label>
+    <input id="partnerId" type="text" placeholder="VD: 90135737" style="width:110px">
+  </div>
+  <div class="form-group">
+    <label for="partnerPass">Password:</label>
+    <input id="partnerPass" type="password" placeholder="Mật khẩu" style="width:90px">
+  </div>
+  <button id="connect">Kết nối</button>
+  <button id="disconnect">Ngắt</button>
+  <span id="status">Chưa kết nối</span>
+</header>
+<main>
+  <canvas tabindex="0" id="screen"></canvas>
+</main>
+<footer>Click vào màn hình để điều khiển chuột và bàn phím. Nhấn Ngắt kết nối để đóng phiên.</footer>
+<script>
+const screen=document.querySelector('#screen'),ctx=screen.getContext('2d'),held=new Set(),buttons=new Set();
+let busy=false,lastMove=0;
+async function post(path,value={}){
+  const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)});
+  if(!r.ok){const err=await r.json().catch(()=>({}));throw Error(err.error||'Thất bại');}
+}
+let inputChain=Promise.resolve();
+function input(v){inputChain=inputChain.then(()=>post('/event',v)).catch(()=>{});}
+function release(){
+  for(const vk of held)input({type:'key',vk,down:false});
+  held.clear();
+  for(const button of buttons)input({type:'button',button,down:false});
+  buttons.clear();
+}
+document.querySelector('#connect').onclick=()=>{
+  const id=document.querySelector('#partnerId').value.trim();
+  const pass=document.querySelector('#partnerPass').value.trim();
+  if(!id||!pass){alert('Vui lòng nhập đầy đủ Partner ID và Password');return;}
+  document.querySelector('#status').textContent='Đang khởi tạo kết nối...';
+  post('/connect',{id,pass}).catch(e=>alert(e.message));
+};
+document.querySelector('#disconnect').onclick=()=>{
+  release();
+  inputChain.then(()=>post('/disconnect')).catch(()=>{});
+};
+function point(e){
+  const r=screen.getBoundingClientRect();
+  return{x:Math.floor((e.clientX-r.left)*screen.width/r.width),y:Math.floor((e.clientY-r.top)*screen.height/r.height)};
+}
+screen.onpointermove=e=>{if(performance.now()-lastMove<35)return;lastMove=performance.now();input({type:'move',...point(e)});};
+screen.onpointerdown=e=>{e.preventDefault();screen.focus();screen.setPointerCapture(e.pointerId);const button=['left','middle','right'][e.button];if(button){input({type:'move',...point(e)});input({type:'button',button,down:true});buttons.add(button);}};
+screen.onpointerup=e=>{const button=['left','middle','right'][e.button];if(button){input({type:'button',button,down:false});buttons.delete(button);}};
+screen.oncontextmenu=e=>e.preventDefault();
+screen.addEventListener('wheel',e=>{e.preventDefault();input({type:'wheel',delta:e.deltaY>0?-120:120});},{passive:false});
+const special={Enter:13,Escape:27,Backspace:8,Tab:9,Space:32,ShiftLeft:160,ShiftRight:161,ControlLeft:162,ControlRight:163,AltLeft:164,AltRight:165,MetaLeft:91,MetaRight:92,ArrowLeft:37,ArrowUp:38,ArrowRight:39,ArrowDown:40,Home:36,End:35,PageUp:33,PageDown:34,Delete:46,Insert:45,CapsLock:20,Semicolon:186,Equal:187,Comma:188,Minus:189,Period:190,Slash:191,Backquote:192,BracketLeft:219,Backslash:220,BracketRight:221,Quote:222};
+function keycode(code){if(special[code]!==undefined)return special[code];if(/^Key[A-Z]$/.test(code))return code.charCodeAt(3);if(/^Digit[0-9]$/.test(code))return code.charCodeAt(5);if(/^F([1-9]|1[0-2])$/.test(code))return 111+Number(code.slice(1));return null;}
+screen.onkeydown=e=>{const vk=keycode(e.code);if(vk===null)return;e.preventDefault();held.add(vk);input({type:'key',vk,down:true});};
+screen.onkeyup=e=>{const vk=keycode(e.code);if(vk===null)return;e.preventDefault();held.delete(vk);input({type:'key',vk,down:false});};
+screen.onblur=release;window.onblur=release;
+async function refresh(){
+  if(busy)return;busy=true;
+  try{
+    const s=await(await fetch('/status',{signal:AbortSignal.timeout(3000)})).json();
+    const stEl=document.querySelector('#status');
+    if(s.state==='connected')stEl.style.color='#3fb950';
+    else if(s.state==='connecting')stEl.style.color='#d29922';
+    else stEl.style.color='#8b949e';
+    stEl.textContent=(s.state==='connected'?'Đã kết nối':(s.state==='connecting'?'Đang kết nối...':'Chưa kết nối'))+(s.error?' ('+s.error+')':'');
+    if(s.frames){
+      const blob=await(await fetch('/frame.png',{signal:AbortSignal.timeout(3000)})).blob();
+      const bmp=await createImageBitmap(blob);
+      if(screen.width!==bmp.width||screen.height!==bmp.height){screen.width=bmp.width;screen.height=bmp.height;}
+      ctx.drawImage(bmp,0,0);
+      bmp.close();
+    }
+  }catch{document.querySelector('#status').textContent='Mất kết nối server';}
+  finally{busy=false;}
+}
+setInterval(refresh,150);refresh();
+</script></html>
