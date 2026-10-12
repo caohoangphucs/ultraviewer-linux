@@ -21,8 +21,6 @@ def main(port=8765):
     win.connect("destroy", Gtk.main_quit)
 
     icon_path = Path(__file__).with_name("ultraviewer-linux.png")
-    if not icon_path.exists():
-        icon_path = Path("/home/phuc/Documents/Codex/2026-10-12/new-chat/work/build-appimage/AppDir/ultraviewer-linux.png")
     if icon_path.exists():
         try:
             win.set_icon_from_file(str(icon_path))

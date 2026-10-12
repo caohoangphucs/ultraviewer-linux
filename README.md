@@ -90,5 +90,9 @@ python3 server.py --port 8499 --host 0.0.0.0
 
 ---
 
-## 5. Giấy phép & Tuyên bố miễn trừ trách nhiệm
-Dự án được thực hiện phục vụ mục đích nghiên cứu kỹ thuật đảo ngược giao thức (reverse engineering) và tương thích đa nền tảng.
+## 5. Tuyên bố miễn trừ trách nhiệm (Disclaimer & Fair Use)
+
+- **Mục đích nghiên cứu:** Dự án này được phát triển hoàn toàn phục vụ mục đích nghiên cứu học thuật, giáo dục và tăng cường khả năng tương tác liên nền tảng (Interoperability) theo nguyên tắc *Fair Use*.
+- **Quyền sở hữu trí tuệ:** "UltraViewer" và các nhãn hiệu liên quan là tài sản trí tuệ và thương hiệu đã đăng ký của chủ sở hữu tương ứng (DucFabulous Co., Ltd / UltraViewer). Dự án mã nguồn mở này hoàn toàn **độc lập**, **không liên kết**, **không được tài trợ** và **không được ủy quyền** bởi chủ sở hữu UltraViewer.
+- **Không chịu trách nhiệm:** Tác giả không chịu trách nhiệm đối với bất kỳ hành vi lạm dụng, vi phạm Điều khoản Dịch vụ (ToS), tổn thất dữ liệu hoặc bất kỳ thiệt hại nào phát sinh trực tiếp hoặc gián tiếp từ việc sử dụng phần mềm này. Người dùng tự chịu mọi rủi ro khi sử dụng.
+- **Tuân thủ bản quyền:** Mã nguồn trong dự án này được viết lại độc lập từ đầu (clean-room re-implementation). Nếu chủ sở hữu nhãn hiệu có bất kỳ thắc mắc hoặc yêu cầu nào liên quan đến tài sản trí tuệ, vui lòng mở Issue hoặc liên hệ để được hỗ trợ gỡ bỏ kịp thời.

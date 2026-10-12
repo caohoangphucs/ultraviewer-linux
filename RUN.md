@@ -16,10 +16,10 @@ Mở URL127.0.0.1 được in ra, bấm Kết nối, click màn hình để đi�
 
 Trên máy đã kiểm thử, hai hồ sơ riêng đang ở:
 
-- /home/phuc/Documents/Codex/2026-10-12/new-chat/work/ultraviewer-handoff/work/linux-controller-private.json
-- /home/phuc/Documents/Codex/2026-10-12/new-chat/work/ultraviewer-handoff/work/partner-request-private.json
+- `./linux-controller-private.json`
+- `./default-partner.json`
 
-Thay hai đường dẫn /path trong lệnh bằng các đường dẫn này. Hồ sơ không nằm trong gói giao vì chứa thông tin xác thực. Hồ sơ đăng ký gồm ansi_codec và26terms; hồ sơ đối tác gồm17request_terms,password,password_type. viewer giữ các hồ sơ ở phía máy chủ, không đưa mật khẩu vào HTML. Đây là hồ sơ của phiên đã kiểm thử, chưa có trình tạo hồ sơ cho máy mới.
+Thay hai đường dẫn `/path` trong lệnh bằng các đường dẫn này. Hồ sơ đăng ký gồm `ansi_codec` và 26 terms; hồ sơ đối tác gồm 17 terms, password, password_type. `viewer` giữ các hồ sơ ở phía máy chủ, không đưa mật khẩu vào HTML.
 
 ## Kiểm tra
 
