@@ -102,3 +102,23 @@ class ScreenCacheTests(unittest.TestCase):
         self.assertGreater(screen.canvas.getpixel((95,14))[1],170)
         wrong=RGB555Screen((96,32),None,block_size=16)
         with self.assertRaises(ValueError):wrong.apply(fields)
+
+class DesktopSizeTests(unittest.TestCase):
+    def test_login_dimensions_support_larger_partner(self):
+        import struct
+        from screen_decode import desktop_size_from_login,RGB555Screen
+        fields=[b'\0\0',struct.pack('<i',1920),struct.pack('<i',1080)]
+        size=desktop_size_from_login(fields)
+        self.assertEqual(size,(1920,1080))
+        screen=RGB555Screen(size,None)
+        update=[b'\1',b'',b'',b'\0',b'\0'*4,b'',b'',b'',b'',b'',struct.pack('<hhhhi',1800,1000,32,32,7)]
+        screen.apply(update)
+        self.assertEqual(len(screen.cache),1)
+        with self.assertRaises(ValueError):RGB555Screen((1024,768),None).apply(update)
+
+    def test_bad_login_dimensions_rejected(self):
+        import struct
+        from screen_decode import desktop_size_from_login
+        for w,h in [(0,1080),(-1,768),(100000,100000),(8192,8192)]:
+            with self.assertRaises(ValueError):desktop_size_from_login([b'\0',struct.pack('<i',w),struct.pack('<i',h)])
+        with self.assertRaises(ValueError):desktop_size_from_login([b'\0',b'1',b'2'])

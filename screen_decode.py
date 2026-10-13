@@ -158,3 +158,13 @@ class RGB555Screen:
         self.canvas = canvas
         self.cache = cache
         return count
+
+
+def desktop_size_from_login(fields):
+    """Read partner desktop width/height from kind0 Int32LE fields1/2."""
+    if len(fields)<3 or not fields[0] or fields[0][0]!=0 or len(fields[1])!=4 or len(fields[2])!=4:
+        raise ValueError('invalid login desktop dimensions')
+    width,height=(int.from_bytes(v,'little',signed=True) for v in fields[1:3])
+    if not 0<width<=8192 or not 0<height<=8192 or width*height>32*1024*1024:
+        raise ValueError('partner desktop dimensions outside allocation limit')
+    return width,height

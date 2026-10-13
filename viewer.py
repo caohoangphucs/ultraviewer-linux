@@ -13,7 +13,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from control_session import ControlSession
-from screen_decode import RGB555Screen, ZstdDictionaryDecoder
+from screen_decode import RGB555Screen, ZstdDictionaryDecoder, desktop_size_from_login
 from input_control import mouse_move,mouse_button,mouse_wheel,keyboard
 
 
@@ -69,7 +69,11 @@ class Viewer:
                         try:kind,fields=session.receive()
                         except TimeoutError:continue
                         if kind==0:
-                            with self.lock:self.state['state']='connected'
+                            size=desktop_size_from_login(fields)
+                            screen=RGB555Screen(size,ZstdDictionaryDecoder(self.dictionary),block_size=self.block_size)
+                            with self.lock:
+                                self.state['width'],self.state['height']=size
+                                self.state['state']='connected'
                         elif kind==1:
                             screen.apply(fields)
                             data=io.BytesIO();screen.canvas.save(data,format='PNG')
